@@ -19,7 +19,7 @@
               class="el-menu-vertical-demo"
             >
               <el-menu-item index="1">
-                <span>Organizational management</span>
+                <span>Organizational</span>
               </el-menu-item>
               <el-menu-item index="2">
                 <span>Positions</span>

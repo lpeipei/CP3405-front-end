@@ -193,8 +193,7 @@ export default {
             this.$emit('on-head-close')
         },
         close() {
-            console.log(222)
-            this.$emit('update:show', false)
+            this.$emit('update:value', false)
             this.$emit('on-close')
         },
         EscClose(e) {
@@ -213,6 +212,7 @@ export default {
             this.beforeEnter()
         }
         document.addEventListener('keydown', this.EscClose)
+        console.log(this.value,88)
     },
     beforeDestroy() {
         document.removeEventListener('keydown', this.EscClose)

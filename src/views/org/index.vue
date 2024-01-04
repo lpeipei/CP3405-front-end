@@ -12,7 +12,7 @@
             />
           </div>
           <div :class="s.btnDv">
-            <el-button type="primary" plain>Search</el-button>
+            <el-button type="primary" plain @click="addNewOrg">Add</el-button>
           </div>
         </div>
 
@@ -37,16 +37,15 @@
                 {{ row.name }}
               </template>
             </el-table-column>
-            <el-table-column prop="type" label="type" width="180" />
             <el-table-column
               prop="number"
               label="Number of members"
-              width="158"
+              width="180"
             />
-            <el-table-column prop="leader" label="leader" />
-            <el-table-column prop="mananger" label="mananger" width="100">
+            <el-table-column prop="leader" label="leader" width="180"/>
+            <el-table-column prop="manager" label="manager" width="180">
               <template v-slot="{ row }">
-                {{ row.mananger }}
+                {{ row.manager }}
                 <el-button type="primary" link @click="editManager(row)">
                   <el-icon><Edit /></el-icon>
                 </el-button>
@@ -58,7 +57,7 @@
                   link
                   type="primary"
                   size="small"
-                  @click="editManager(scope)"
+                  @click="editManager(row)"
                 >
                   Add
                 </el-button>
@@ -67,12 +66,13 @@
         </el-table>
         </div>
         <v-aside
-          v-show="show"
+          :value="addShow"
           :loading="loading"
           title="Add New Org"
           ok-text="Confirm"
           cancel-text="Cancel"
-          @on-cancel="cancel"
+          @on-close="addCancel"
+          @on-head-close="addCancel"
         >
           <el-form :model="form" label-width="80px">
             <el-form-item label="Name">
@@ -100,25 +100,45 @@
         </v-aside>
 
         <el-dialog
-          v-model="dialogVisible"
-          title="Change manager"
-          width="30%"
-          :before-close="dialogCancel"
+          v-model="editManagerVisible"
+          title="Select Manager"
+          width="40%"
+          :before-close="managerCancel"
         >
           <el-form>
             <el-form-item label="Employee Name">
-              <el-input v-model="form.name" />
+                <el-autocomplete
+                    v-model="managerQuery.manager.name"
+                    :fetch-suggestions="querySearchAsync"
+                    placeholder="name or ID"
+                    @select="handleSelect"
+                    :trigger-on-focus="false"
+                    style="width: 100%;"
+                >
+                    <template #suffix>
+                        <el-button link :icon="Search" @click="handleSearch" />
+                    </template>
+                    <template #default="{ item }">
+                        <div :class="s.searchDropTop">
+                            <span>{{ item.name }}</span>
+                            <span :class="s.searchDropTop_job">{{ item.position }}</span>
+                        </div>
+                        <span :class="s.searchDropTop_job">ID: {{ item.code }}</span>
+                    </template>
+                </el-autocomplete>
             </el-form-item>
           </el-form>
+
           <template #footer>
             <span class="dialog-footer">
-              <el-button @click="dialogCancel">Cancel</el-button>
-              <el-button type="primary" @click="dialogVisible = false">
+              <el-button @click="managerCancel">Cancel</el-button>
+              <el-button type="primary" @click="managerConfirm">
                 Confirm
               </el-button>
             </span>
           </template>
         </el-dialog>
+
       </template>
     </v-wrapper>
 </template>
@@ -129,16 +149,6 @@ import { ref, toRefs, reactive, defineComponent, onMounted } from "vue";
 import VWrapper from "../../components/Wrapper.vue";
 import VAside from "../../components/Aside.vue";
 import axios from 'axios';
-interface User {
-  mananger: string;
-  leader: string;
-  name: string;
-  type: string;
-  hasChildren?: boolean;
-  number: string;
-  id: number;
-  children?: User[];
-}
 export default defineComponent({
   components: {
     VWrapper,
@@ -156,95 +166,89 @@ export default defineComponent({
       code: "",
     });
     const data = reactive({
-      show: true,
+      addShow: false,
       loading: true,
       dialogVisible: false,
+      editManagerVisible: false,
       query: {
         keyword: "",
         departmentId: ""
-      }
+      },
+      tableData: [],
+      managerQuery: {
+        manager: {
+            code: '',
+            name: '',
+            position: ''
+        },
+        departmentId: ""
+      },
+      
+      searchData: [
+        { name: 'vue', code: 'E231', position: 'software development' },
+        { name: 'element', code: 'E231', position: 'software development' },
+        { name: 'cooking', code: 'E231', position: 'software development' },
+        { name: 'mint-ui', code: 'E231', position: 'software development' },
+        { name: 'vuex', code: 'E231', position: 'software development' },
+        { name: 'vue-router', code: 'E231', position: 'software development' },
+        { name: 'babel', code: 'E231', position: 'software development' },
+    ]
     });
-    const tableData: User[] = [
-      {
-        name: "company",
-        type: "department",
-        number: "189",
-        leader: "Tom",
-        mananger: "Jerry",
-        hasChildren: true,
-        id: 1,
-        children: [
-          {
-            name: "IT",
-            type: "team",
-            number: "120",
-            leader: "Tom",
-            mananger: "Jerry",
-            id: 31,
-          },
-          {
-            name: "IT",
-            type: "team",
-            number: "120",
-            leader: "Tom",
-            mananger: "Jerry",
-            id: 32,
-          },
-        ],
-      },
-      {
-        name: "IT",
-        type: "team",
-        number: "120",
-        leader: "Tom",
-        mananger: "Jerry",
-        id: 2,
-      },
-      {
-        name: "company",
-        type: "department",
-        number: "189",
-        leader: "Tom",
-        mananger: "Jerry",
-        id: 3,
-      },
-      {
-        name: "IT",
-        type: "team",
-        number: "120",
-        leader: "Tom",
-        mananger: "Jerry",
-        id: 4,
-      },
-    ];
+    
+
+    const getChildren = (id) => {
+        // todo ajax 请求
+        return []
+    }
+
+    // 搜索用户
+    const querySearchAsync = (str, callback) => {
+            // todo 接口调试
+        console.log(str, 'str')
+        callback(data.searchData)
+    }
+    const handleSearch = (item) => {
+        console.log(item, 1222)
+    }
+    // 选择员工做管理员
+    const handleSelect = (item) => {
+        data.managerQuery.manager = {...item}
+    }
+
+    const managerCancel = () => {
+        data.managerQuery = {
+            manager: {
+                code: '',
+                name: '',
+                position: ''
+            },
+            departmentId: ""
+        }
+        data.editManagerVisible = false
+
+    }
+    const managerConfirm = () => {
+        // 
+        managerCancel()
+    }
+
+    const addNewOrg = () => {
+        data.addShow = true
+    }
 
     const load = (
-      row: User,
-      treeNode: unknown,
-      resolve: (date: User[]) => void
+      row,
+      treeNode,
+      resolve
     ) => {
-      setTimeout(() => {
-        resolve([
-          {
-            name: "IT",
-            type: "team",
-            number: "120",
-            leader: "Tom",
-            mananger: "Jerry",
-            id: 31,
-          },
-          {
-            name: "IT",
-            type: "team",
-            number: "120",
-            leader: "Tom",
-            mananger: "Jerry",
-            id: 32,
-          },
-        ]);
-      }, 1000);
+        // todo
+        // getChildren(row.id)
+        console.log(row, 1111)
+        resolve([...row.children])
     };
-    const cancel = () => (data.show = !data.show);
+    const addCancel = () => {
+        data.addShow = false
+    };
 
     const handleOpen = (key: string, keyPath: string[]) => {
       console.log(key, keyPath);
@@ -253,30 +257,33 @@ export default defineComponent({
       console.log(key, keyPath);
     };
     const editManager = (row) => {
-      console.log(row);
-      data.dialogVisible = true;
-    };
-    const dialogCancel = () => {
-      data.dialogVisible = false;
-    };
+      data.managerQuery.departmentId = row.departmentId;
+      data.editManagerVisible = true;
+    }
 
     onMounted(() => {
-        axios.get('http://127.0.0.1:5000/api/organization')
+        axios.get('http://127.0.0.1:5000/api/organization/list', { params: { ...data.query } })
         .then(response => {
-            console.log(response, 11)
+            console.log(response.data, 11)
+            data.tableData = response.data;
         })
         .catch(error => {
             console.error('Error fetching organization structure:', error);
         });
+        console.log(data.addShow, 'adds')
     })
     return {
       load,
-      cancel,
+      addCancel,
       handleOpen,
       handleClose,
       editManager,
-      dialogCancel,
-      tableData,
+      querySearchAsync,
+      handleSelect,
+      handleSearch,
+      managerCancel,
+      managerConfirm,
+      addNewOrg,
       form,
       Search,
       ...toRefs(data),
@@ -331,5 +338,12 @@ export default defineComponent({
 }
 .table {
     padding-top: 24px;
+}
+.searchDropTop {
+    display: flex;
+    justify-content: space-between;
+}
+.searchDropTop_job {
+    color: #80848f;
 }
 </style>
