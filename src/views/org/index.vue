@@ -8,7 +8,7 @@
               style="width: 240px; height: 40px"
               placeholder="Type something"
               :suffix-icon="Search"
-              v-model="queryInput"
+              v-model="query.keyword"
             />
           </div>
           <div :class="s.btnDv">
@@ -125,9 +125,10 @@
 
 <script lang="ts">
 import { Search, Edit } from "@element-plus/icons-vue";
-import { ref, toRefs, reactive, defineComponent } from "vue";
+import { ref, toRefs, reactive, defineComponent, onMounted } from "vue";
 import VWrapper from "../../components/Wrapper.vue";
 import VAside from "../../components/Aside.vue";
+import axios from 'axios';
 interface User {
   mananger: string;
   leader: string;
@@ -146,7 +147,6 @@ export default defineComponent({
     VAside,
   },
   setup() {
-    const queryInput = ref("");
     const form = reactive({
       name: "",
       mananger: "",
@@ -159,6 +159,10 @@ export default defineComponent({
       show: true,
       loading: true,
       dialogVisible: false,
+      query: {
+        keyword: "",
+        departmentId: ""
+      }
     });
     const tableData: User[] = [
       {
@@ -255,6 +259,16 @@ export default defineComponent({
     const dialogCancel = () => {
       data.dialogVisible = false;
     };
+
+    onMounted(() => {
+        axios.get('http://127.0.0.1:5000/api/organization')
+        .then(response => {
+            console.log(response, 11)
+        })
+        .catch(error => {
+            console.error('Error fetching organization structure:', error);
+        });
+    })
     return {
       load,
       cancel,
@@ -264,7 +278,6 @@ export default defineComponent({
       dialogCancel,
       tableData,
       form,
-      queryInput,
       Search,
       ...toRefs(data),
     };
