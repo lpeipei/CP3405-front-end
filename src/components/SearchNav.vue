@@ -18,7 +18,7 @@
                         >
                             {{ item.value }}
                         </span>
-                        <span :class="s.people">人</span>
+                        <!-- <span :class="s.people">人</span> -->
                     </div>
                 </div>
             </template>
@@ -30,21 +30,21 @@
                     <span :class="s.value">
                         {{ item.value }}
                     </span>
-                    <span :class="s.people">人</span>
+                    <!-- <span :class="s.people">人</span> -->
                 </div>
             </div>
         </li>
-        <li :class="liClass(arr3)" :style="{ flexGrow: tab.three }">
+        <!-- <li :class="liClass(arr3)" :style="{ flexGrow: tab.three }">
             <div v-for="(item, idx) of arr3" :key="idx" :class="s.hover" @click="setCondition(item)">
                 <div :class="contentClass(item)">
                     <div :class="s.title">{{ item.title }}</div>
                     <span :class="s.value">
                         {{ item.value }}
                     </span>
-                    <span :class="s.people">人</span>
+                    <span :class="s.people">people</span> 
                 </div>
             </div>
-        </li>
+        </li> -->
     </ul>
 </template>
 <script>
@@ -54,16 +54,18 @@ export default {
             title: '',
             max: 6,
             arr1: [
-                {title: 'dai', value: 2, type: 2},
-                {title: 'dai', value: 2, type: 1}
+                {title: 'All', value: 2, type: 1},
+                {title: 'Full-time', value: 2, type: 6},
+                {title: 'Part-time', value: 2, type: 7}
                 ], // 第一个tab
             arr2: [
-                {title: 'dai', value: 2, type: 2},
-                {title: 'dai', value: 2, type: 1}
+                {title: 'Confirming', value: 2, type: 2},
+                {title: 'Leaving', value: 2, type: 5},
+                {title: 'Separated', value: 2, type: 5}
             ], // 第二个tab
             arr3: [
-                {title: 'dai', value: 2, type: 2},
-                {title: 'dai', value: 2, type: 1}
+                {title: 'Confirming', value: 2, type: 3},
+                {title: 'Separated', value: 2, type: 4}
             ], // 第三个tab
             exeption: {} // 异常员工
         }

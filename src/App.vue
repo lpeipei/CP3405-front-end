@@ -1,90 +1,120 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-// import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <!-- <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <div :class="s.wrapper">
+    <div :class="s.topBar">
+      <div :class="s.topBarLeft">
+        <div :class="s.logo"></div>
+        <!-- <div :class="s.companyName">companyName</div> -->
+      </div>
+      <div :class="s.topBarRight">
+        <div :class="s.avatar"></div>
+      </div>
     </div>
-  </header> -->
 
-  <div class="wrapper">
-    <RouterView />
+    <el-container :class="s.main">
+      <el-aside width="250px" v-if="route?.query?.showAside !== 'false'">
+        <el-row class="tac">
+          <el-col>
+            <el-menu
+              :default-active="`${activeIndex}`"
+              class="el-menu-vertical-demo"
+            >
+              <el-menu-item @click="goPage(item, index)" v-for="(item, index) in routerList" :index="`${index}`">
+                <span>{{ item.name }}</span>
+              </el-menu-item>
+            </el-menu>
+          </el-col>
+        </el-row>
+      </el-aside>
+      <el-main>
+        <RouterView />
+      </el-main>
+    </el-container>
   </div>
 </template>
+<script>
+import { toRefs, reactive, defineComponent, onMounted } from "vue";
+import { useRouter , useRoute } from 'vue-router'
+export default defineComponent({
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+    const data = reactive({
+        activeIndex: 0,
+        routerList: [
+          { name: 'Organizational', linkName: 'home' },
+          { name: 'Employees', linkName: 'employee' },
+          { name: 'Positions', linkName: 'positions' },
+        ]
+    })
+    const goPage = (item, index) => {
+        data.activeIndex = index
+        router.push({ name: item.linkName })
+    }
 
-<style scoped>
-/* .wrapper {
-  background-color: #eee;
-} */
-/* header {
-  line-height: 1.5;
-  max-height: 100vh;
+    onMounted(() => {
+        console.log(route, 'xx')
+    })
+
+    return {
+      ...toRefs(data),
+      route,
+      goPage
+    }
+  }
+})
+</script>
+<style scoped module="s" lang="scss">
+.wrapper {
+  /* background-color: #000; */
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
+  min-height: 60px;
+  background: #2b2b2c;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .topBarLeft {
     display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+    justify-content: center;
+    padding-left: 24px;
+    .logo {
+      width: 120px;
+      height: 40px;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .companyName {
+      color: #fff;
+    }
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
+  .topBarRight {
+    padding-right: 24px;
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #fff;
+    }
   }
+}
 
-  header .wrapper {
+.main {
+  padding-top: 60px;
+  width: 90%;
+  margin: 0 auto;
+  .searchDv {
     display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
   }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
+  .table {
+    padding-top: 24px;
   }
-} */
+}
 </style>

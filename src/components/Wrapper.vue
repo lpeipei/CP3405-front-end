@@ -15,17 +15,11 @@
         <el-row class="tac">
           <el-col>
             <el-menu
-              default-active="1"
+              :default-active="`${activeIndex}`"
               class="el-menu-vertical-demo"
             >
-              <el-menu-item index="1">
-                <span>Organizational</span>
-              </el-menu-item>
-              <el-menu-item index="2">
-                <span>Positions</span>
-              </el-menu-item>
-              <el-menu-item index="3">
-                <span>Employee</span>
+              <el-menu-item @click="goPage(item, index)" v-for="(item, index) in routerList" :index="`${index}`">
+                <span>{{ item.name }}</span>
               </el-menu-item>
             </el-menu>
           </el-col>
@@ -37,7 +31,31 @@
     </el-container>
   </div>
 </template>
-
+<script>
+import { ref, toRefs, reactive, defineComponent, onMounted } from "vue";
+import { useRouter, useRoute } from 'vue-router'
+export default defineComponent({
+  setup() {
+    const router = useRouter()
+    const data = reactive({
+        activeIndex: 0,
+        routerList: [
+          { name: 'Organizational', linkName: 'home' },
+          { name: 'Employees', linkName: 'employee' },
+          { name: 'Positions', linkName: 'positions' },
+        ]
+    })
+    const goPage = (item, index) => {
+        data.activeIndex = index
+        router.push({ name: item.linkName })
+    }
+    return {
+      ...toRefs(data),
+      goPage
+    }
+  }
+})
+</script>
 <style scoped module="s" lang="scss">
 .wrapper {
   /* background-color: #000; */

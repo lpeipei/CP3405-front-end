@@ -12,6 +12,9 @@ const router = createRouter({
     {
       path: "/org-detail",
       name: "OrgDetail",
+      query: {
+        showAside: false,
+      },
       component: () => import("../views/org/detail.vue"),
     },
     {

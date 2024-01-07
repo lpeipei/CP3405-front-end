@@ -59,10 +59,12 @@
 <script>
 import { ref, toRefs, reactive, defineComponent } from "vue";
 import { Search } from "@element-plus/icons-vue";
+import { useRouter } from 'vue-router'
 export default defineComponent({
     setup() {
+        const router = useRouter();
         const goBack = () => {
-            console.log("todo back")
+            router.back(-1)
         }
         const queryInput = ref('')
         const data = reactive({
