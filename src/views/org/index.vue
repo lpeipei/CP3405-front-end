@@ -6,6 +6,7 @@
         style="width: 240px; height: 40px"
         placeholder="Type org name or code"
         v-model="query.keyword"
+        clearable
       >
         <template #suffix>
           <el-button type="primary" link @click="getList">
@@ -28,9 +29,9 @@
       :header-cell-style="{
         background: '#eef1f6',
         color: '#606266',
-        height: '50px',
+        height: '60px'
       }"
-      :row-style="{ height: '50px' }"
+      :row-style="{ height: '60px' }"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       lazy
       row-key="id"
@@ -43,8 +44,8 @@
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="number" label="Number of members" width="180" />
-      <el-table-column prop="manager" label="manager" width="180">
+      <!-- <el-table-column prop="number" label="Number of members" width="180" /> -->
+      <el-table-column prop="manager" label="manager" width="200">
         <template v-slot="{ row }">
           {{ row.manager.name }}
           <el-button type="primary" link @click="editManager(row)">
@@ -52,7 +53,7 @@
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="leader" label="leader" width="180">
+      <el-table-column prop="leader" label="leader" width="200">
         <template v-slot="{ row }">
           {{ row.leader.name }}
           <!-- <el-button type="primary" link @click="editManager(row)">
@@ -61,23 +62,22 @@
         </template>
       </el-table-column>
       <el-table-column fixed="right" label="Operations" width="150">
-        <template #default="row">
-          <div>
+        <template v-slot="{ row }">
+          <div v-if="!['Company ABC', 'Company XYZ'].includes(row.name)">
             <el-button
               link
-              type="primary"
-              size="small"
-              @click="editManager(row)"
+              type="danger"
+              @click="deleteBtn(row)"
             >
-              edit
+              delete
             </el-button>
             <el-button
               link
               type="primary"
-              size="small"
-              @click="editManager(row)"
+              disabled
+              @click="editRow(row)"
             >
-              delete
+              edit
             </el-button>
           </div>
         </template>
@@ -172,7 +172,7 @@
     width="40%"
     :before-close="managerCancel"
   >
-    <el-form>
+    <el-form ref="formRef">
       <el-form-item label="Employee Name">
         <el-autocomplete
           v-model="managerKeyword"
@@ -211,7 +211,7 @@ import { useRouter, useRoute } from "vue-router";
 import { ref, toRefs, reactive, defineComponent, onMounted } from "vue";
 import VAside from "../../components/Aside.vue";
 import axios from "axios";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from 'element-plus'
 export default defineComponent({
   components: {
     Search,
@@ -249,6 +249,7 @@ export default defineComponent({
       },
     });
 
+    const editRow = () => {}
     const goDetail = (item) => {
       router.push({
         name: "OrgDetail",
@@ -258,7 +259,39 @@ export default defineComponent({
         },
       });
     };
-
+    const deleteBtn = (item) => {
+      console.log(item, 222)
+        ElMessageBox.confirm(
+          'The org will be deleted. Continue?',
+          'Warning',
+          {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning',
+          }
+        )
+          .then(() => {
+            axios
+            .delete(`http://127.0.0.1:5015/api/company_structure/delete/${item.id}`)
+            .then((response) => {
+                ElMessage({
+                type: 'success',
+                message: 'Delete completed',
+              })
+              getList()
+            })
+            .catch((error) => {
+              console.error("Error fetching organization structure:", error);
+            });
+            
+          })
+          .catch(() => {
+            ElMessage({
+              type: 'info',
+              message: 'Delete canceled',
+            })
+          })
+    }
     const getChildren = (id) => {
       // todo ajax 请求
       return [];
@@ -275,6 +308,25 @@ export default defineComponent({
         })
         .then((response) => {
           data.addShow = false;
+            ElMessage({
+              message: "added successfully",
+              type: "success",
+            });
+            data.form = {
+              name: "",
+              manager: {
+                name: "",
+              },
+              leader: {
+                name: "",
+              },
+              parent: {
+                name: "",
+                id: null,
+              },
+              describe: "",
+            }
+            getList()
         })
         .catch((error) => {
           console.error("Error fetching organization structure:", error);
@@ -296,7 +348,6 @@ export default defineComponent({
         });
     };
     const getListAsync = (str, callback) => {
-      // callback(data.searchData)
       axios
         .get("http://127.0.0.1:5000/api/organization/list", {
           params: { keyword: data.form.parent.name },
@@ -347,7 +398,7 @@ export default defineComponent({
         )
         .then((response) => {
           ElMessage({
-            message: "Update administrator successful!",
+            message: "Update manager successful!",
             type: "success",
           });
         })
@@ -402,6 +453,8 @@ export default defineComponent({
       handleSelectParent,
       goDetail,
       getList,
+      deleteBtn,
+      editRow,
       Search,
       ...toRefs(data),
     };
@@ -452,8 +505,12 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 12px;
+  background: #adcef1;
+  border-radius: 5px;
 }
 .table {
+  // padding: 12px;
   padding-top: 24px;
 }
 .searchDropTop {

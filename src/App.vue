@@ -2,21 +2,26 @@
   <div :class="s.wrapper">
     <div :class="s.topBar">
       <div :class="s.topBarLeft">
-        <div :class="s.logo"></div>
+        <!-- <div :class="s.logo"></div> -->
         <!-- <div :class="s.companyName">companyName</div> -->
       </div>
       <div :class="s.topBarRight">
-        <div :class="s.avatar"></div>
+        <div :class="s.avatar">
+          <el-avatar
+          src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+        />
+        </div>
       </div>
     </div>
 
     <el-container :class="s.main">
-      <el-aside width="250px" v-if="route?.query?.showAside !== 'false'">
-        <el-row class="tac">
-          <el-col>
+      <el-aside width="250px" :class="s.aside" v-if="route?.query?.showAside !== 'false'">
+        <el-row class="tac" :class="s.asideRow">
+          <el-col :class="s.asideCol">
             <el-menu
               :default-active="`${activeIndex}`"
               class="el-menu-vertical-demo"
+              :class="s.asideMenu"
             >
               <el-menu-item @click="goPage(item, index)" v-for="(item, index) in routerList" :index="`${index}`">
                 <span>{{ item.name }}</span>
@@ -96,10 +101,10 @@ export default defineComponent({
   .topBarRight {
     padding-right: 24px;
     .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #fff;
+      // width: 40px;
+      // height: 40px;
+      // border-radius: 50%;
+      // background: #fff;
     }
   }
 }
@@ -117,4 +122,7 @@ export default defineComponent({
     padding-top: 24px;
   }
 }
+// .aside, .asideRow, .asideCol, .asideMenu {
+//   background-color:red;
+// }
 </style>

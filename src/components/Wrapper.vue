@@ -108,4 +108,5 @@ export default defineComponent({
     padding-top: 24px;
   }
 }
+
 </style>

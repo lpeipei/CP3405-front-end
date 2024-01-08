@@ -12,7 +12,7 @@
             <el-main>
                 <div :class="s.mainHeader">
                     <div :class="s.nameDv">
-                        <p :class="s.title">Company name</p>
+                        <p :class="s.title">Company ABC</p>
                         <el-button type="primary" plain>manage</el-button>
                     </div>
                     <div :class="s.hSubDv">
@@ -21,8 +21,8 @@
                             <span :class="s.hSupOrgName">Company</span>
                         </div>
                         <div :class="s.hNumOrg">
-                            <p>manager: <span style="color: #f90;">no manager</span></p>
-                            <p style="margin-top: 8px;">There are <span style="color: #f90;">12</span> members in the organization</p>
+                            <p>manager: <span style="color: #f90;">John Doe</span></p>
+                            <p style="margin-top: 8px;">There are <span style="color: #f90;">6</span> members in the organization</p>
                         </div>
                     </div>
                 </div>

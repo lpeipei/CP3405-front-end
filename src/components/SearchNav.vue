@@ -5,20 +5,19 @@
                 <div
                     v-if="arr1.length === max + 1 || idx < max"
                     :key="idx"
-                    :class="[s.hover, item.type === 2 ? s.contentTwo : '']"
+                    :class="[s.hover, item.type === 0 ? s.contentTwo : '']"
                     @click="setCondition(item)"
                 >
                     <div :class="contentClass(item)">
                         <div :class="s.title">{{ item.title }}</div>
                         <span
                             :class="{
-                                [s.highlight]: item.type === 2,
+                                [s.highlight]: item.type === 0,
                                 [s.value]: true
                             }"
                         >
                             {{ item.value }}
                         </span>
-                        <!-- <span :class="s.people">人</span> -->
                     </div>
                 </div>
             </template>
@@ -30,43 +29,30 @@
                     <span :class="s.value">
                         {{ item.value }}
                     </span>
-                    <!-- <span :class="s.people">人</span> -->
                 </div>
             </div>
         </li>
-        <!-- <li :class="liClass(arr3)" :style="{ flexGrow: tab.three }">
-            <div v-for="(item, idx) of arr3" :key="idx" :class="s.hover" @click="setCondition(item)">
-                <div :class="contentClass(item)">
-                    <div :class="s.title">{{ item.title }}</div>
-                    <span :class="s.value">
-                        {{ item.value }}
-                    </span>
-                    <span :class="s.people">people</span> 
-                </div>
-            </div>
-        </li> -->
     </ul>
 </template>
 <script>
+import axios from "axios";
 export default {
     data() {
         return {
             title: '',
             max: 6,
+            total: 0,
+            acctiveType: 0,
             arr1: [
-                {title: 'All', value: 2, type: 1},
-                {title: 'Full-time', value: 2, type: 6},
-                {title: 'Part-time', value: 2, type: 7}
+                {title: 'All', value: 0, type: 0},
+                {title: 'Full-time', value: 0, type: 1},
+                {title: 'Part-time', value: 0, type: 2}
                 ], // 第一个tab
             arr2: [
-                {title: 'Confirming', value: 2, type: 2},
-                {title: 'Leaving', value: 2, type: 5},
-                {title: 'Separated', value: 2, type: 5}
+                {title: 'Confirming', value: 0, type: 3},
+                {title: 'Leaving', value: 0, type: 4},
+                {title: 'Separated', value: 0, type: 5}
             ], // 第二个tab
-            arr3: [
-                {title: 'Confirming', value: 2, type: 3},
-                {title: 'Separated', value: 2, type: 4}
-            ], // 第三个tab
             exeption: {} // 异常员工
         }
     },
@@ -75,57 +61,69 @@ export default {
             const {
                 max,
                 arr1: { length: arr1Len },
-                arr2: { length: arr2Len },
-                arr3: { length: arr3Len }
+                arr2: { length: arr2Len }
             } = this
             let one = 5
             if (arr1Len) one = arr1Len > max ? max + 1 : arr1Len + 1
             return {
                 one,
-                two: arr2Len || 3,
-                three: arr3Len || 2
+                two: arr2Len || 3
             }
         }
     },
     methods: {
+        getList() {
+            axios
+            .get("http://127.0.0.1:5008/api/status/list")
+            .then((response) => {
+                let total = 0
+                for(let i  = 0; i < response.data.length; i++) {
+                    total = response.data[i].number + total
+                    for(let j = 0; j < this.arr1.length; j++) {
+                        if (this.arr1[j].type == response.data[i].value) {
+                            this.arr1[j].value = response.data[i].number
+                        }
+                    }
+                    for(let j = 0; j < this.arr2.length; j++) {
+                        if (this.arr2[j].type == response.data[i].value) {
+                            this.arr2[j].value = response.data[i].number
+                        }
+                    }
+                }
+                const allIndex = this.arr1.findIndex((element) => element.type == 0)
+                this.arr1[allIndex].value = total
+
+            })
+            .catch((error) => {
+            console.error("Error fetching organization structure:", error);
+            });
+        },
         liClass(arr) {
             return {
                 [this.s.defStyle]: true,
                 [this.s.sk]: !arr.length,
                 [this.s.group]: !!arr.length,
-                // todo item => item.type === this.query.type
-                [this.s.active]: arr.some(item => item.type === 1)
+                [this.s.active]: arr.some(item => item.type === this.acctiveType)
             }
         },
         contentClass(item) {
             return {
                 [this.s.content]: true,
-                // todo item.type === this.query.type
-                [this.s.contentActiva]: item.type === 1
+                [this.s.contentActiva]: item.type === this.acctiveType
             }
         },
         setDropCondition(item) {
-            this.title = item.title
             this.setQuery({
                 type: item.type
             })
         },
         setCondition(item) {
-            this.title = ''
-
-            if (item.type === -1) {
-                this.$router.push({
-                    name: 'waitList'
-                })
-            } else {
-                if (item.type !== 4 && this.query._order_by === '-leave_date') {
-                    this.query._order_by = 'hire_date'
-                }
-                this.setQuery({
-                    type: item.type
-                })
-            }
+            this.acctiveType = item.type
+            this.$emit('on-change-status', item)
         },
+    },
+    mounted: function(){
+        this.getList()
     }
 }
 </script>
